@@ -38,7 +38,7 @@ router.post('/user/new', async ( req, res ) => {
 		// Save user in the database
 		await user.save()
 			.then(data => {
-				return res.status(201).send(responseGenerator(true, data, ''));
+				return res.status(201).send(responseGenerator(true, 'Add Successfully', data));
 			}).catch(err => {
 				return res.status(400).send(responseGenerator(false, 'No ' + 'amy thing found .', '', ''));
 			});

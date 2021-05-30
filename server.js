@@ -4,6 +4,7 @@ const cors = require("cors");
 // var schedule = require('./schedules/schedule.js');
 const UsersController=require ("./routes/UsersController")
 const OrderController=require ("./routes/OrderController")
+const DailyController=require ("./routes/DailyController")
 const bus=require ("./routes/registerbus")
 // Create express app
 const app = express();
@@ -26,7 +27,7 @@ app.use(bodyParser.json());
 
 app.use('/api/',UsersController)
 app.use('/api/',OrderController)
-
+app.use('/api/',DailyController)
 app.use('/api/',bus)
 // Configuring the database
 const dbConfig = require("./config/database.config.js");
@@ -54,6 +55,6 @@ mongoose
   mongoose.set('useFindAndModify', false)
 
 // Listen for requests
-app.listen(process.env.PORT || 3000, function(){
+app.listen(process.env.PORT || 5000, function(){
     console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
