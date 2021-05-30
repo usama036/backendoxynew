@@ -11,7 +11,7 @@ const app = express();
 // Set the port to use
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: 'https://oxywater.herokuapp.com/',
     optionsSuccessStatus: 200 ,// For legacy browser support
     methods: "GET, PUT, POST"
 }
