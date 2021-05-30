@@ -9,7 +9,6 @@ const bus=require ("./routes/registerbus")
 const app = express();
 // Set the port to use
 
-const port =process.env.port || 5000;
 const corsOptions = {
     origin: 'http://localhost:3000',
     optionsSuccessStatus: 200 ,// For legacy browser support
@@ -55,6 +54,6 @@ mongoose
   mongoose.set('useFindAndModify', false)
 
 // Listen for requests
-app.listen(port, () => {
-  console.log("Server is listening on port " + port);
+app.listen(process.env.PORT || 3000, function(){
+    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
