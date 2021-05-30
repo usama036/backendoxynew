@@ -1,0 +1,36 @@
+{
+  "name": "backend-node",
+  "version": "1.0.0",
+  "description": "Restful API for Simple CRUD",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "14.17.0"
+  },
+  "keywords": [
+    "Express",
+    "RestAPI",
+    "MongoDB",
+    "Mongoose"
+  ],
+  "author": "cbonaudo",
+  "license": "MIT",
+  "dependencies": {
+
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.22.2",
+    "mongoose": "^5.2.9",
+    "node-cron": "^2.0.1"
+  },
+  "devDependencies": {
+    "cookie-parser": "^1.4.5",
+    "csurf": "^1.11.0",
+    "nodemon": "^1.18.3"
+  }
+}
