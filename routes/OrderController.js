@@ -64,13 +64,13 @@ router.get('/test', async ( req, res ) => {
 
 
 
-router.get('/export/bill/:id', isAuthenticated, async ( req, res ) => {
+router.post('/export/bill', isAuthenticated, async ( req, res ) => {
 
     
-    const inputs = req.params;
-    console.log(inputs.id);
+    const inputs = req.body;
+
     const records =  await Order.find({
-        user: inputs.id, createdAt: {
+        user: inputs.user, createdAt: {
             $gte: moment().startOf('month').format('YYYY,MM,DD HH:mm:ss'),
             $lte: moment().endOf('month').format('YYYY,MM,DD HH:mm:ss')
         }
