@@ -161,8 +161,6 @@ router.get('/export/bill/:id', isAuthenticated, async ( req, res ) => {
     const tempPath = tempfile('.xlsx');
     console.log(tempPath);
     fs.writeFileSync(tempPath, buffer)
-    
-    
     const mailgun = require("mailgun-js");
     const DOMAIN = 'sandbox81b50885ef754fe39d84512b0a299eef.mailgun.org';
     const mg = mailgun({apiKey: '70d78a5243bb381483d336dc7eb12634-d32d817f-75849f82', domain: DOMAIN});
