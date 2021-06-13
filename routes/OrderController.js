@@ -76,6 +76,18 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
         }
     }).populate('user',);
     
+    const devliery = records.reduce(function ( acc, obj ) {
+        return acc + obj.bottleDelivery;
+    }, 0); // 7
+    const returns = records.reduce(function ( acc, obj ) {
+        return acc + obj.bottleReturn;
+    }, 0); // 7
+    const bill = records.reduce(function ( acc, obj ) {
+        return acc + obj.price;
+    }, 0)
+    
+    const remaining = devliery - returns;
+    
     if (!records.length) {
         return res.send('No orders found on specified filters. Please change filters then try again.');
     }
@@ -128,6 +140,9 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
         ['Delivery', 16],
         ['Return', 21],
         ['Date', 28],
+        ['Bill', 15],
+        ['Total Delivery', 30],
+        ['Total Return',30]
 
     ];
     
@@ -157,6 +172,9 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
         
         row++;
     });
+    worksheet.cell(row, 8).number(bill);
+    worksheet.cell(row, 9).number(devliery);
+    worksheet.cell(row, 10).number(remaining);
     const buffer = await workbook.writeToBuffer();
     const tempPath = tempfile('.xlsx');
     console.log(tempPath);
@@ -165,7 +183,7 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
     const DOMAIN = 'sandbox81b50885ef754fe39d84512b0a299eef.mailgun.org';
     const mg = mailgun({apiKey: '70d78a5243bb381483d336dc7eb12634-d32d817f-75849f82', domain: DOMAIN});
     const data = {
-        from: 'Excited User <unaseer932@gmail.com>',
+        from: `${records[0].user.name} ${records[0].user.name} <unaseer932@gmail.com>`,
         to: 'charsitbr@gmail.com',
         subject: `${records[0].user.name} ${moment().format('MMMM-YYYY')}`,
         text: 'Testing some Mailgun awesomness!',
