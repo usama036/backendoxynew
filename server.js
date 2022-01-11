@@ -11,9 +11,9 @@ const app = express();
 // Set the port to use
 
 const corsOptions = {
-    origin: 'https://oxywater.herokuapp.com',
+    origin: 'http://localhost:3000',
     optionsSuccessStatus: 200 ,// For legacy browser support
-    methods: "GET, PUT, POST"
+    methods: "GET, PUT, POST, DELETE"
 }
 
 app.use(cors(corsOptions));
@@ -38,21 +38,21 @@ mongoose.set('debug', true);
 
 // Connecting to the database
 mongoose
-  .connect(
-    dbConfig.url,
-    {
-      useNewUrlParser: true
-    }
-  )
-  .then(() => {
-    console.log("Successfully connected to the database");
-  })
-  .catch(err => {
-    console.log("Could not connect to the database. Exiting now...");
-    process.exit();
-  });
+    .connect(
+        dbConfig.url,
+        {
+            useNewUrlParser: true
+        }
+    )
+    .then(() => {
+        console.log("Successfully connected to the database");
+    })
+    .catch(err => {
+        console.log("Could not connect to the database. Exiting now...");
+        process.exit();
+    });
 
-  mongoose.set('useFindAndModify', false)
+mongoose.set('useFindAndModify', false)
 
 // Listen for requests
 app.listen(process.env.PORT || 5000, function(){
