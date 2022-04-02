@@ -13,6 +13,9 @@ const Users = mongoose.Schema({
 	phoneNo: {
 	    type: String,
     },
+	price: {
+		type: Number,
+	},
 	city: {
 	    type: String
     },

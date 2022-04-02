@@ -1,22 +1,22 @@
 const Order = require('../models/Order');
 const express = require('express');
+const Users = require('../models/Users');
 const router = express.Router();
-const isAuthenticated = require('../Middleware/isAthunicated')
+const isAuthenticated = require('../Middleware/isAthunicated');
 const responseGenerator = require('../helper/responseGenerator');
 const moment = require('moment');
-const tempfile = require('tempfile')
-const fs = require('fs')
-router.post('/order/create',isAuthenticated ,async ( req, res ) => {
+const tempfile = require('tempfile');
+const fs = require('fs');
+router.post('/order/create', isAuthenticated, async ( req, res ) => {
 	
 	const inputs = req.body;
-	inputs.price=Number(inputs.price)*Number(inputs.bottleDelivery);
 	
 	try {
-		if(inputs.orderId){
-			let updated = await Order.updateOne({_id: inputs.orderId}, { $set: { ...inputs } });
+		if ( inputs.orderId ) {
+			let updated = await Order.updateOne({_id: inputs.orderId}, {$set: {...inputs}});
 			return res.status(201).send(responseGenerator(true, 'Record update', updated));
 			
-		}else{
+		} else {
 			
 			const order = new Order(inputs);
 			await order.save()
@@ -27,14 +27,33 @@ router.post('/order/create',isAuthenticated ,async ( req, res ) => {
 				});
 		}
 		
-		
 	} catch {
 		return res.status(200).send(responseGenerator(false, 'Something went wrong', '',));
 	}
 });
+router.post('/order/monthly/create', isAuthenticated, async ( req, res ) => {
+	
+	const inputs = req.body;
+	console.log(inputs);
 
-router.get('/list/Orders', isAuthenticated ,( req, res ) => {
-	Order.find().populate('user','phoneNo name')
+		for ( const input of inputs.values ) {
+			const data={}
+			 data.bottleDelivery = input.delivery || 0;
+			 data.bottleReturn = input.returned || 0;
+			 data.user = inputs._id;
+			 data.createdAt = input.date
+			const order = new Order(data);
+			 console.log(data);
+			await order.save()
+			
+		}
+		return res.status(201).send(responseGenerator(true, 'Record saved'));
+		
+		
+	
+});
+router.get('/list/Orders', isAuthenticated, ( req, res ) => {
+	Order.find().populate('user', 'phoneNo name')
 		.then(orders => {
 			return res.status(201).send(responseGenerator(true, 'order list', orders));
 			
@@ -52,10 +71,11 @@ router.post('/customer/bill', isAuthenticated, async ( req, res ) => {
 			$gte: moment(inputs.date).startOf('month').format('YYYY,MM,DD HH:mm:ss'),
 			$lte: moment(inputs.date).endOf('month').format('YYYY,MM,DD HH:mm:ss')
 		}
-	}).populate('user');
+	});
 	const bottles_record = await Order.find({
 		user: inputs.user
-	}).populate('user');
+	});
+	const user = await Users.findOne({_id: inputs.user}).select('price');
 	if ( orders ) {
 		const devliery = orders.reduce(function ( acc, obj ) {
 			return acc + obj.bottleDelivery;
@@ -63,9 +83,7 @@ router.post('/customer/bill', isAuthenticated, async ( req, res ) => {
 		const returns = orders.reduce(function ( acc, obj ) {
 			return acc + obj.bottleReturn;
 		}, 0); // 7
-		const bill = orders.reduce(function ( acc, obj ) {
-			return acc + obj.price;
-		}, 0)
+		const bill = devliery * user.price;
 		
 		const totalDelivery = bottles_record.reduce(function ( acc, obj ) {
 			return acc + obj.bottleDelivery;
@@ -75,10 +93,9 @@ router.post('/customer/bill', isAuthenticated, async ( req, res ) => {
 		}, 0);
 		
 		const remaining = totalDelivery - totalReturns;
-		return res.status(201).send(responseGenerator(true, 'order list', {orders,devliery,bill,remaining}));
+		return res.status(201).send(responseGenerator(true, 'order list', {orders, devliery, bill, remaining}));
 	}
 });
-
 
 router.post('/customer/orders', isAuthenticated, async ( req, res ) => {
 	const inputs = req.body;
@@ -100,7 +117,7 @@ router.post('/customer/orders', isAuthenticated, async ( req, res ) => {
 		}, 0); // 7
 		const bill = orders.reduce(function ( acc, obj ) {
 			return acc + obj.price;
-		}, 0)
+		}, 0);
 		
 		const totalDelivery = bottles_record.reduce(function ( acc, obj ) {
 			return acc + obj.bottleDelivery;
@@ -110,7 +127,7 @@ router.post('/customer/orders', isAuthenticated, async ( req, res ) => {
 		}, 0);
 		
 		const remaining = totalDelivery - totalReturns;
-		return res.status(201).send(responseGenerator(true, 'order list', {orders,devliery,bill,remaining}));
+		return res.status(201).send(responseGenerator(true, 'order list', {orders, devliery, bill, remaining}));
 	}
 });
 
@@ -118,14 +135,11 @@ router.get('/test', async ( req, res ) => {
 	res.send('works');
 });
 
-
-
 router.post('/export/bill', isAuthenticated, async ( req, res ) => {
-	
 	
 	const inputs = req.body;
 	
-	const records =  await Order.find({
+	const records = await Order.find({
 		user: inputs.user, createdAt: {
 			$gte: moment().startOf('month').format('YYYY,MM,DD HH:mm:ss'),
 			$lte: moment().endOf('month').format('YYYY,MM,DD HH:mm:ss')
@@ -140,11 +154,11 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
 	}, 0); // 7
 	const bill = records.reduce(function ( acc, obj ) {
 		return acc + obj.price;
-	}, 0)
+	}, 0);
 	
 	const remaining = devliery - returns;
 	
-	if (!records.length) {
+	if ( !records.length ) {
 		return res.send('No orders found on specified filters. Please change filters then try again.');
 	}
 	
@@ -198,12 +212,12 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
 		['Date', 28],
 		['Bill', 15],
 		['Total Delivery', 30],
-		['Total Return',30]
+		['Total Return', 30]
 	
 	];
 	
 	worksheet.row(1).setHeight(30);
-	Headings.forEach((_head, key) => {
+	Headings.forEach(( _head, key ) => {
 		worksheet.cell(1, (key + 1)).string(_head[0]).style(HeadingStyle);
 		worksheet.column((key + 1)).setWidth(_head[1]);
 	});
@@ -215,7 +229,7 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
 		//     parseInt(createdAt.format('YYMMDD').toString() + ord.get('id').toString())
 		// ).style({alignment: {horizontal: 'center'}});
 		
-		if (_order.user) {
+		if ( _order.user ) {
 			worksheet.cell(row, 1).string(_order.user.name);
 			worksheet.cell(row, 2).string(_order.user.phoneNo);
 		}
@@ -234,8 +248,8 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
 	const buffer = await workbook.writeToBuffer();
 	const tempPath = tempfile('.xlsx');
 	console.log(tempPath);
-	fs.writeFileSync(tempPath, buffer)
-	const mailgun = require("mailgun-js");
+	fs.writeFileSync(tempPath, buffer);
+	const mailgun = require('mailgun-js');
 	const DOMAIN = 'sandbox81b50885ef754fe39d84512b0a299eef.mailgun.org';
 	const mg = mailgun({apiKey: '70d78a5243bb381483d336dc7eb12634-d32d817f-75849f82', domain: DOMAIN});
 	const data = {
@@ -243,12 +257,12 @@ router.post('/export/bill', isAuthenticated, async ( req, res ) => {
 		to: 'charsitbr@gmail.com',
 		subject: `${records[0].user.name} ${moment().format('MMMM-YYYY')}`,
 		text: 'Testing some Mailgun awesomness!',
-		attachment:tempPath
+		attachment: tempPath
 	};
-	mg.messages().send(data, function (error, body) {
+	mg.messages().send(data, function ( error, body ) {
 		console.log(body);
 	});
-	res.send('ok')
+	res.send('ok');
 	
 }),
 	
