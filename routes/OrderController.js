@@ -49,8 +49,6 @@ router.post('/order/monthly/create', isAuthenticated, async ( req, res ) => {
 		}
 		return res.status(201).send(responseGenerator(true, 'Record saved'));
 		
-		
-	
 });
 router.get('/list/Orders', isAuthenticated, ( req, res ) => {
 	Order.find().populate('user', 'phoneNo name')
