@@ -23,8 +23,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 // activate CORS
 
-
-
 app.use('/api/',UsersController)
 app.use('/api/',OrderController)
 app.use('/api/',DailyController)
